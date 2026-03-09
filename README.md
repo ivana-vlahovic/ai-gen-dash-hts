@@ -11,7 +11,7 @@
 
 A lightweight campaign operations dashboard built as part of Hopper's interview process. The prompt asked for a rapid prototype that surfaces at-risk campaigns, explains *why* they're at risk in plain language, and recommends a concrete next action — all within a 60-90 minute time frame and encouraged use of AI. I chose to use Claude as my main tool of creating the web app, with prompts to help refine logic and design choices. 
 
-**Live demo:** [your GitHub Pages URL here](https://ivana-vlahovic.github.io/ai-gen-dash-hts/)
+**Live demo:** [Dashboard link](https://ivana-vlahovic.github.io/ai-gen-dash-hts/) | **GitHub Link:** [Visit Repository](https://github.com/ivana-vlahovic/ai-gen-dash-hts)
 
 ---
 
