@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTS Media - Rapid Prototype Exercise | Vlahovic</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,300;6..12,400;6..12,600;6..12,700;6..12,800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --coral:#fa6866;--coral-bg:rgba(250,104,102,.09);
+  --sky:#4fc3f7;--sky-bg:rgba(79,195,247,.09);
+  --navy:#0d1117;--navy2:#161c26;--navy3:#1c2436;--navy4:#222d42;
+  --border:#2a3347;--border2:#374260;
+  --text:#eef0f5;--text-sub:#a8b2c8;--text-muted:#5c6b85;
+  --green:#43e97b;--green-bg:rgba(67,233,123,.09);
+  --yellow:#ffd166;--yellow-bg:rgba(255,209,102,.09);
+  --purple:#c084fc;--purple-bg:rgba(192,132,252,.09);
+  --font:'Nunito Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--navy);color:var(--text);font-family:var(--font);font-size:13px;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(79,195,247,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(79,195,247,.015) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;max-width:1500px;margin:0 auto;padding:0 28px 60px}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0 0;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-logo{width:34px;height:34px;background:linear-gradient(135deg,var(--coral),#f04f4d);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff}
+.brand-name{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.3px}
+.brand-name span{color:var(--coral)}
+.brand-sub{font-size:11px;color:var(--text-muted);font-weight:600}
+.topbar-r{display:flex;align-items:center;gap:14px}
+.live-pill{display:flex;align-items:center;gap:6px;background:var(--green-bg);border:1px solid rgba(67,233,123,.2);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--green);letter-spacing:.08em;text-transform:uppercase}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.topbar-date{font-size:11px;color:var(--text-muted);font-weight:600}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab-btn{padding:13px 22px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--text-muted);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .18s;margin-bottom:-1px}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--coral);border-bottom-color:var(--coral)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* FILTER BAR */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:18px;padding:11px 14px;background:var(--navy2);border:1px solid var(--border);border-radius:10px}
+.flabel{font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+select,input[type=date]{background:var(--navy3);border:1px solid var(--border);color:var(--text-sub);font-family:var(--font);font-size:12px;font-weight:600;padding:5px 10px;border-radius:6px;cursor:pointer;outline:none;transition:border-color .15s;appearance:none;min-width:108px}
+select:focus,input:focus{border-color:var(--sky);color:var(--text)}
+.fsep{width:1px;height:20px;background:var(--border);margin:0 2px}
+.fspace{flex:1}
+.clear-btn{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-family:var(--font);font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .15s;letter-spacing:.04em;text-transform:uppercase}
+.clear-btn:hover{border-color:var(--coral);color:var(--coral)}
+
+/* LOCAL TOGGLE */
+.ltog{display:flex;border:1px solid var(--border);border-radius:5px;overflow:hidden}
+.lbtn{background:transparent;border:none;color:var(--text-muted);font-family:var(--font);font-size:10px;font-weight:700;padding:4px 10px;cursor:pointer;transition:all .15s;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.lbtn:hover{color:var(--text);background:var(--navy3)}
+.lbtn.active{background:var(--navy4);color:var(--sky);border:none}
+.lbtn-coral.active{background:var(--navy4);color:var(--coral)}
+
+/* SCORECARDS */
+.scorecards{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-bottom:18px}
+.sc{background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:13px 15px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s}
+.sc:hover{border-color:var(--border2);transform:translateY(-1px)}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--sc-color,var(--sky));border-radius:10px 10px 0 0}
+.sc-label{font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:.11em;text-transform:uppercase;margin-bottom:6px}
+.sc-val{font-size:21px;font-weight:800;color:var(--text);line-height:1;letter-spacing:-.03em;margin-bottom:3px}
+.sc-sub{font-size:10px;color:var(--text-muted);font-weight:600;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.sc-sub b{color:var(--text-sub)}
+.wow{font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px}
+.wow.up{background:rgba(67,233,123,.12);color:var(--green)}
+.wow.dn{background:rgba(250,104,102,.12);color:var(--coral)}
+.wow.flat{background:rgba(168,178,200,.1);color:var(--text-muted)}
+.coral-c{--sc-color:var(--coral)} .sky-c{--sc-color:var(--sky)} .green-c{--sc-color:var(--green)} .yellow-c{--sc-color:var(--yellow)} .purple-c{--sc-color:var(--purple)}
+
+/* CHART ROW */
+.chart-row{display:grid;grid-template-columns:1.9fr 1fr;gap:12px;margin-bottom:12px}
+
+/* TOP PERFORMERS HORIZONTAL */
+.top-performers-bar{background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:18px}
+.top-performers-bar .phdr{margin-bottom:12px}
+.top-performers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.top-card{background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s}
+.top-card:hover{transform:translateY(-2px);border-color:var(--border2)}
+.top-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--tc-color,var(--green))}
+.tc-rank{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:6px}
+.tc-name{font-size:13px;font-weight:800;color:var(--text);margin-bottom:3px;line-height:1.3}
+.tc-meta{font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:10px}
+.tc-chips{display:flex;gap:6px;flex-wrap:wrap}
+.panel{background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+.phdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap}
+.phdr-left{display:flex;flex-direction:column;gap:5px}
+.ptitle{font-size:13px;font-weight:800;color:var(--text);letter-spacing:-.01em;white-space:nowrap}
+.phdr-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.cbox{position:relative;height:195px}
+.cbox-sm{position:relative;height:175px}
+
+/* PACING BARS — responsive wrap */
+.pbars{display:grid;grid-template-columns:1fr;gap:10px;margin-top:2px}
+.prow{display:flex;align-items:center;gap:8px}
+.pname{font-size:11px;font-weight:700;color:var(--text-sub);width:64px;text-align:right;flex-shrink:0}
+.btrack{flex:1;height:7px;background:var(--navy3);border-radius:4px;overflow:hidden;min-width:40px}
+.bfill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.16,1,.3,1)}
+.bpct{font-size:11px;font-weight:700;width:33px;text-align:right;flex-shrink:0}
+
+/* TABLE */
+.tbl-panel{background:var(--navy2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.thdr{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--border)}
+.ttitle{font-size:14px;font-weight:800;color:var(--text)}
+.tcount{font-size:12px;font-weight:700;color:var(--text-muted)}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:1100px}
+thead th{font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--text-muted);padding:8px 13px;text-align:left;border-bottom:1px solid var(--border);background:var(--navy3);white-space:nowrap;cursor:pointer}
+thead th:hover{color:var(--text)}
+thead th.sa::after{content:' ↑';color:var(--coral)}
+thead th.sd::after{content:' ↓';color:var(--coral)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+td{padding:10px 13px;vertical-align:middle}
+.tdname{font-size:13px;font-weight:700;color:var(--text)}
+.tdmeta{font-size:11px;color:var(--text-muted);font-weight:600;margin-top:1px}
+.pcol{min-width:100px}
+.pnum{font-size:12px;font-weight:700;margin-bottom:2px}
+.pb{height:4px;background:var(--navy3);border-radius:2px;overflow:hidden}
+.pbf{height:100%;border-radius:2px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap}
+.badge.high{background:var(--coral-bg);color:var(--coral);border:1px solid rgba(250,104,102,.25)}
+.badge.medium{background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(255,209,102,.25)}
+.badge.low{background:var(--green-bg);color:var(--green);border:1px solid rgba(67,233,123,.25)}
+.badge.done{background:var(--sky-bg);color:var(--sky);border:1px solid rgba(79,195,247,.25)}
+.bdot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.mc{font-size:11px;font-weight:700;color:var(--text-sub);background:var(--navy3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;white-space:nowrap;display:inline-block}
+.td-reason{color:var(--text-sub);font-size:12px;line-height:1.5;max-width:190px;font-weight:600}
+.td-action{font-size:12px;line-height:1.5;max-width:200px;font-weight:600}
+.arr{color:var(--coral);font-weight:800;margin-right:3px}
+.status-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.sp-ip{background:rgba(79,195,247,.1);color:var(--sky);border:1px solid rgba(79,195,247,.2)}
+.sp-dl{background:rgba(250,104,102,.1);color:var(--coral);border:1px solid rgba(250,104,102,.2)}
+.sp-wa{background:rgba(255,209,102,.1);color:var(--yellow);border:1px solid rgba(255,209,102,.2)}
+.sp-pa{background:rgba(192,132,252,.1);color:var(--purple);border:1px solid rgba(192,132,252,.2)}
+.sp-co{background:rgba(67,233,123,.1);color:var(--green);border:1px solid rgba(67,233,123,.2)}
+
+/* DRILL TAB */
+.drill-metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px}
+.dtm{background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:13px 15px;position:relative;overflow:hidden}
+.dtm::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--dm-c,var(--sky))}
+.dtm-label{font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:.11em;text-transform:uppercase;margin-bottom:6px}
+.dtm-val{font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1;margin-bottom:2px}
+.dtm-sub{font-size:10px;color:var(--text-muted);font-weight:600}
+.combo-panel{background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:18px}
+.combo-box{position:relative;height:250px}
+.raw-tbl-wrap{overflow-x:auto;max-height:360px;overflow-y:auto}
+.raw-tbl-wrap::-webkit-scrollbar{width:5px;height:5px}
+.raw-tbl-wrap::-webkit-scrollbar-track{background:var(--navy3)}
+.raw-tbl-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+table.rtbl{min-width:1500px}
+table.rtbl thead th{position:sticky;top:0;z-index:2;background:var(--navy3)}
+.section-gap{height:18px}
+
+footer{border-top:1px solid var(--border);padding-top:14px;margin-top:18px;display:flex;align-items:center;justify-content:space-between}
+.ftxt{font-size:11px;font-weight:600;color:var(--text-muted)}
+.ftxt span{color:var(--coral)}
+
+.fade-up{opacity:0;transform:translateY(8px);animation:fu .4s forwards}
+@keyframes fu{to{opacity:1;transform:translateY(0)}}
+.fade-up:nth-child(1){animation-delay:.04s}.fade-up:nth-child(2){animation-delay:.08s}
+.fade-up:nth-child(3){animation-delay:.12s}.fade-up:nth-child(4){animation-delay:.16s}
+.fade-up:nth-child(5){animation-delay:.20s}.fade-up:nth-child(6){animation-delay:.24s}
+.fade-up:nth-child(7){animation-delay:.28s}.fade-up:nth-child(8){animation-delay:.32s}
+@media(max-width:1200px){
+  .scorecards{grid-template-columns:repeat(4,1fr)}
+  .chart-row{grid-template-columns:1fr}
+  .drill-metrics{grid-template-columns:repeat(3,1fr)}
+  .top-performers-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:900px){
+  .top-performers-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+  .scorecards{grid-template-columns:repeat(2,1fr)}
+  .chart-row{grid-template-columns:1fr}
+  .drill-metrics{grid-template-columns:repeat(2,1fr)}
+  .top-performers-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">H</div>
+    <div>
+      <div class="brand-name"><span>HTS</span> Media</div>
+      <div class="brand-sub">Campaign Risk Radar · Strategy &amp; Operations</div>
+    </div>
+  </div>
+  <div class="topbar-r">
+    <div class="topbar-date">March 7, 2026</div>
+    <div class="live-pill"><div class="ldot"></div>Live</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('exec',this)">📊 Executive Overview</button>
+  <button class="tab-btn" onclick="switchTab('drill',this)">🔍 Campaign Drill-Down</button>
+</div>
+
+<!-- ══════════════════ TAB 1: EXECUTIVE ══════════════════ -->
+<div id="tab-exec" class="tab-pane active">
+
+  <div class="filters">
+    <span class="flabel">Platform</span>
+    <select id="f-plat" onchange="applyExec()">
+      <option value="all">All Platforms</option>
+      <option value="ios">iOS</option><option value="android">Android</option>
+      <option value="web">Web</option><option value="ott_tv">OTT/TV</option><option value="podcast">Podcast</option>
+    </select>
+    <div class="fsep"></div>
+    <span class="flabel">Channel</span>
+    <select id="f-chan" onchange="applyExec()">
+      <option value="all">All Channels</option>
+      <option value="social">Social</option><option value="display">Display</option>
+      <option value="search">Search</option><option value="video">Video</option><option value="audio">Audio</option>
+    </select>
+    <div class="fsep"></div>
+    <span class="flabel">Risk</span>
+    <select id="f-risk" onchange="applyExec()">
+      <option value="all">All Risk Levels</option>
+      <option value="high">🔴 High</option><option value="medium">🟡 Medium</option>
+      <option value="low">🟢 On Track</option><option value="done">✅ Done</option>
+    </select>
+    <div class="fsep"></div>
+    <span class="flabel">Status</span>
+    <select id="f-status" onchange="applyExec()">
+      <option value="all">All Statuses</option>
+      <option value="Campaign In Progress">In Progress</option>
+      <option value="Launch Delayed">Launch Delayed</option>
+      <option value="Waiting on Assets">Waiting on Assets</option>
+      <option value="Paused">Paused</option>
+      <option value="Complete">Complete</option>
+    </select>
+    <div class="fsep"></div>
+    <span class="flabel">Start From</span>
+    <input type="date" id="f-start" onchange="applyExec()">
+    <span class="flabel">End Before</span>
+    <input type="date" id="f-end" onchange="applyExec()">
+    <div class="fspace"></div>
+    <button class="clear-btn" onclick="clearExec()">Clear</button>
+  </div>
+
+  <!-- SCORECARDS: at-risk, avg pacing ratio, % budget spent, budget at risk, total budget, avg cac, ctr, cvr -->
+  <div class="scorecards">
+    <div class="sc coral-c fade-up">
+      <div class="sc-label">At-Risk Campaigns</div>
+      <div class="sc-val" style="color:var(--coral)" id="sc-risk">—</div>
+      <div class="sc-sub">of <b id="sc-total">—</b></div>
+      <div class="sc-sub" id="wow-risk" style="margin-top:4px;gap:3px"></div>
+    </div>
+    <div class="sc sky-c fade-up">
+      <div class="sc-label">Avg Pacing Ratio</div>
+      <div class="sc-val" style="color:var(--sky)" id="sc-pacratio">—</div>
+      <div class="sc-sub">target 1.0×</div>
+      <div class="sc-sub" id="wow-pr" style="margin-top:4px;gap:3px"></div>
+    </div>
+    <div class="sc yellow-c fade-up">
+      <div class="sc-label">% Budget Spent</div>
+      <div class="sc-val" style="color:var(--yellow)" id="sc-paced">—</div>
+      <div class="sc-sub">avg portfolio</div>
+      <div class="sc-sub" id="wow-paced" style="margin-top:4px;gap:3px"></div>
+    </div>
+    <div class="sc coral-c fade-up">
+      <div class="sc-label">Budget At Risk</div>
+      <div class="sc-val" style="color:var(--coral)" id="sc-atrisk">—</div>
+      <div class="sc-sub"><b id="sc-atrisk-pct">—</b> of total</div>
+      <div class="sc-sub" id="wow-atrisk" style="margin-top:4px;gap:3px"></div>
+    </div>
+    <div class="sc sky-c fade-up">
+      <div class="sc-label">Total Budget</div>
+      <div class="sc-val" style="color:var(--sky)" id="sc-budget">—</div>
+      <div class="sc-sub">portfolio total</div>
+    </div>
+    <div class="sc purple-c fade-up">
+      <div class="sc-label">Avg CAC</div>
+      <div class="sc-val" style="color:var(--purple)" id="sc-cac">—</div>
+      <div class="sc-sub">spend/conv</div>
+      <div class="sc-sub" id="wow-cac" style="margin-top:4px;gap:3px"></div>
+    </div>
+    <div class="sc sky-c fade-up">
+      <div class="sc-label">CTR</div>
+      <div class="sc-val" style="color:var(--sky)" id="sc-ctr">—</div>
+      <div class="sc-sub">clicks/imp</div>
+      <div class="sc-sub" id="wow-ctr" style="margin-top:4px;gap:3px"></div>
+    </div>
+    <div class="sc green-c fade-up">
+      <div class="sc-label">CVR</div>
+      <div class="sc-val" style="color:var(--green)" id="sc-cvr">—</div>
+      <div class="sc-sub">conv/click</div>
+      <div class="sc-sub" id="wow-cvr" style="margin-top:4px;gap:3px"></div>
+    </div>
+  </div>
+
+  <!-- CHART ROW: 2 cols only -->
+  <div class="chart-row">
+    <!-- Spend Line Chart -->
+    <div class="panel">
+      <div class="phdr">
+        <div class="phdr-left">
+          <div class="ptitle" id="line-title">Daily Spend by Platform</div>
+        </div>
+        <div class="phdr-controls">
+          <div class="ltog" id="ltog-dw">
+            <button class="lbtn lbtn-coral active" id="lbtn-d" onclick="setLineView('daily')">Daily</button>
+            <button class="lbtn lbtn-coral" id="lbtn-w" onclick="setLineView('weekly')">Weekly</button>
+          </div>
+          <div class="ltog">
+            <button class="lbtn active" id="lbtn-plat" onclick="setLineBreak('platform')">Platform</button>
+            <button class="lbtn" id="lbtn-chan" onclick="setLineBreak('channel')">Channel</button>
+          </div>
+        </div>
+      </div>
+      <div class="cbox"><canvas id="trendChart"></canvas></div>
+    </div>
+
+    <!-- Pacing Bars -->
+    <div class="panel">
+      <div class="phdr">
+        <div class="ptitle" id="pace-title">% Budget Spent by Platform</div>
+        <div class="ltog">
+          <button class="lbtn active" id="pace-plat" onclick="setPaceBreak('platform')">Platform</button>
+          <button class="lbtn" id="pace-chan" onclick="setPaceBreak('channel')">Channel</button>
+        </div>
+      </div>
+      <div class="pbars" id="pacingBars"></div>
+    </div>
+  </div>
+
+  <!-- TOP PERFORMERS: full-width horizontal block -->
+  <div class="top-performers-bar">
+    <div style="margin-bottom:12px">
+      <div class="ptitle">🏆 Top Performers</div>
+      <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:.08em;margin-top:4px">ACTIVE CAMPAIGNS ONLY · SCORED BY PACING RATIO, CAC &amp; RISK STATUS</div>
+    </div>
+    <div class="top-performers-grid" id="topPerformers"></div>
+  </div>
+
+  <!-- EXEC TABLE -->
+  <div class="tbl-panel">
+    <div class="thdr">
+      <div class="ttitle">Campaign Risk Summary</div>
+      <div class="tcount" id="tbl-count">—</div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortExecTbl('name')">Campaign</th>
+            <th onclick="sortExecTbl('budget')">Budget</th>
+            <th>% Spent</th>
+            <th onclick="sortExecTbl('cac')">CAC</th>
+            <th onclick="sortExecTbl('ctr')">CTR</th>
+            <th onclick="sortExecTbl('cvr')">CVR</th>
+            <th>Status</th>
+            <th onclick="sortExecTbl('risk')">Risk</th>
+            <th>Why At Risk</th>
+            <th>Recommended Action</th>
+          </tr>
+        </thead>
+        <tbody id="execTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ TAB 2: DRILL-DOWN ══════════════════ -->
+<div id="tab-drill" class="tab-pane">
+
+  <div class="filters">
+    <span class="flabel">Platform</span>
+    <select id="d-plat" onchange="applyDrill()">
+      <option value="all">All Platforms</option>
+      <option value="ios">iOS</option><option value="android">Android</option>
+      <option value="web">Web</option><option value="ott_tv">OTT/TV</option><option value="podcast">Podcast</option>
+    </select>
+    <div class="fsep"></div>
+    <span class="flabel">Channel</span>
+    <select id="d-chan" onchange="applyDrill()">
+      <option value="all">All Channels</option>
+      <option value="social">Social</option><option value="display">Display</option>
+      <option value="search">Search</option><option value="video">Video</option><option value="audio">Audio</option>
+    </select>
+    <div class="fsep"></div>
+    <span class="flabel">Risk</span>
+    <select id="d-risk" onchange="applyDrill()">
+      <option value="all">All Risk Levels</option>
+      <option value="high">🔴 High</option><option value="medium">🟡 Medium</option>
+      <option value="low">🟢 On Track</option><option value="done">✅ Done</option>
+    </select>
+    <div class="fsep"></div>
+    <span class="flabel">Status</span>
+    <select id="d-status" onchange="applyDrill()">
+      <option value="all">All Statuses</option>
+      <option value="Campaign In Progress">In Progress</option>
+      <option value="Launch Delayed">Launch Delayed</option>
+      <option value="Waiting on Assets">Waiting on Assets</option>
+      <option value="Paused">Paused</option>
+      <option value="Complete">Complete</option>
+    </select>
+    <div class="fsep"></div>
+    <span class="flabel">Campaign</span>
+    <select id="d-camp" onchange="applyDrill()">
+      <option value="all">All Campaigns</option>
+    </select>
+    <div class="fsep"></div>
+    <span class="flabel">Start From</span>
+    <input type="date" id="d-start" onchange="applyDrill()">
+    <span class="flabel">End Before</span>
+    <input type="date" id="d-end" onchange="applyDrill()">
+    <div class="fspace"></div>
+    <button class="clear-btn" onclick="clearDrill()">Clear</button>
+  </div>
+
+  <!-- TOP METRICS -->
+  <div class="drill-metrics">
+    <div class="dtm" style="--dm-c:var(--sky)"><div class="dtm-label">Total Budget</div><div class="dtm-val" style="color:var(--sky)" id="dm-bud">—</div><div class="dtm-sub">filtered selection</div></div>
+    <div class="dtm" style="--dm-c:var(--yellow)"><div class="dtm-label">% Budget Spent</div><div class="dtm-val" style="color:var(--yellow)" id="dm-pct">—</div><div class="dtm-sub">avg across selection</div><div class="sc-sub" id="dm-wow-pct" style="margin-top:5px;gap:3px;display:flex;flex-wrap:wrap"></div></div>
+    <div class="dtm" style="--dm-c:var(--coral)"><div class="dtm-label">% Time Remaining</div><div class="dtm-val" style="color:var(--coral)" id="dm-time">—</div><div class="dtm-sub">avg days remaining</div><div class="sc-sub" id="dm-wow-time" style="margin-top:5px;gap:3px;display:flex;flex-wrap:wrap"></div></div>
+    <div class="dtm" style="--dm-c:var(--sky)"><div class="dtm-label">CTR</div><div class="dtm-val" style="color:var(--sky)" id="dm-ctr">—</div><div class="dtm-sub">clicks / impressions</div><div class="sc-sub" id="dm-wow-ctr" style="margin-top:5px;gap:3px;display:flex;flex-wrap:wrap"></div></div>
+    <div class="dtm" style="--dm-c:var(--green)"><div class="dtm-label">CVR</div><div class="dtm-val" style="color:var(--green)" id="dm-cvr">—</div><div class="dtm-sub">convs / clicks</div><div class="sc-sub" id="dm-wow-cvr" style="margin-top:5px;gap:3px;display:flex;flex-wrap:wrap"></div></div>
+    <div class="dtm" style="--dm-c:var(--purple)"><div class="dtm-label">CAC</div><div class="dtm-val" style="color:var(--purple)" id="dm-cac">—</div><div class="dtm-sub">spend / conversion</div><div class="sc-sub" id="dm-wow-cac" style="margin-top:5px;gap:3px;display:flex;flex-wrap:wrap"></div></div>
+  </div>
+
+  <!-- COMBO CHART -->
+  <div class="combo-panel">
+    <div class="phdr">
+      <div class="ptitle" id="combo-title">Daily Spend by Platform</div>
+      <div class="phdr-controls">
+        <div class="ltog">
+          <button class="lbtn lbtn-coral active" id="combo-d" onclick="setComboView('daily')">Daily</button>
+          <button class="lbtn lbtn-coral" id="combo-w" onclick="setComboView('weekly')">Weekly</button>
+        </div>
+        <div class="ltog">
+          <button class="lbtn active" id="combo-plat" onclick="setComboBreak('platform')">Platform</button>
+          <button class="lbtn" id="combo-chan" onclick="setComboBreak('channel')">Channel</button>
+          <button class="lbtn" id="combo-camp" onclick="setComboBreak('campaign')">Campaign</button>
+        </div>
+      </div>
+    </div>
+    <div class="combo-box"><canvas id="comboChart"></canvas></div>
+  </div>
+
+  <!-- DAILY TABLE -->
+  <div class="tbl-panel" style="margin-bottom:18px">
+    <div class="thdr">
+      <div class="ttitle">Daily Level Campaign Data</div>
+      <div class="tcount" id="raw-daily-count">—</div>
+    </div>
+    <div class="raw-tbl-wrap">
+      <table class="rtbl">
+        <thead><tr>
+          <th>Date</th><th>Campaign</th><th>Platform</th><th>Channel</th><th>Source</th>
+          <th>Daily Spend</th><th>Impressions</th><th>Clicks</th><th>Conversions</th>
+          <th>CTR</th><th>CVR</th><th>CAC</th><th>Status</th><th>Risk</th>
+        </tr></thead>
+        <tbody id="dailyTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- WEEKLY TABLE -->
+  <div class="tbl-panel">
+    <div class="thdr">
+      <div class="ttitle">Weekly Level Campaign Data</div>
+      <div class="tcount" id="raw-weekly-count">—</div>
+    </div>
+    <div class="raw-tbl-wrap">
+      <table class="rtbl">
+        <thead><tr>
+          <th>Week</th><th>Campaign</th><th>Platform</th><th>Channel</th><th>Source</th>
+          <th>Weekly Spend</th><th>Impressions</th><th>Clicks</th><th>Conversions</th>
+          <th>CTR</th><th>CVR</th><th>CAC</th><th>Budget</th><th>% Spent (Cum)</th><th>Status</th><th>Risk</th>
+        </tr></thead>
+        <tbody id="weeklyTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /drill -->
+
+<footer>
+  <div class="ftxt">HTS Media · Internal Ops · Prototype v0.4 · <span>AI-assisted risk classification</span></div>
+  <div class="ftxt">Source: Google Sheets (consolidated_daily) · Last sync <span>Mar 7, 2026 09:00 PST</span></div>
+</footer>
+</div>
+
+<script>
+// ═══════════════════════════════ CAMPAIGNS ═══════════════════════════════════
+const CAMPS=[
+  {id:1, name:"Influencer Collab – Q1 Push",       plat:"android",chan:"social", src:"LinkedIn",   budget:100000,spent:82000, imp:1420000,clk:28400,conv:852, start:"2026-01-20",end:"2026-02-28",risk:"high",  status:"Campaign In Progress",reason:"82% of budget spent with 7 days remaining — risk of early exhaustion",action:"Reduce daily pacing 20%; shift remaining budget to highest-CTR placements"},
+  {id:2, name:"Spring Break Deals",                 plat:"ios",    chan:"social", src:"TikTok",     budget:75000, spent:18000, imp:340000, clk:5100, conv:102, start:"2026-02-15",end:"2026-03-15",risk:"high",  status:"Launch Delayed",      reason:"Launch delayed 5 days, compressing delivery window against fixed end date",action:"Increase daily bid caps and widen targeting to recover lost impressions"},
+  {id:3, name:"Hotel Upsell – Warm Destinations",   plat:"ios",    chan:"social", src:"TikTok",     budget:50000, spent:4500,  imp:72000,  clk:900,  conv:18,  start:"2026-02-20",end:"2026-03-20",risk:"high",  status:"Waiting on Assets",   reason:"Only 9% spent at 60% of timeline — stalled on creative dependency",action:"Escalate creative asset request with 48hr deadline or use approved fallback"},
+  {id:4, name:"Gen Z Travel Moments",               plat:"ott_tv", chan:"video",  src:"YouTube",    budget:90000, spent:14000, imp:280000, clk:2240, conv:67,  start:"2026-02-01",end:"2026-03-31",risk:"high",  status:"Waiting on Assets",   reason:"15% spent at 44% elapsed — creative bottleneck creating major delivery risk",action:"Set 72hr hard deadline for UGC creative approval; escalate to campaign manager"},
+  {id:5, name:"Capital One Travel – Spring",        plat:"android",chan:"social", src:"Meta",       budget:85000, spent:11000, imp:198000, clk:2376, conv:47,  start:"2026-02-01",end:"2026-03-31",risk:"high",  status:"Launch Delayed",      reason:"Only 13% spent at 44% elapsed — partner approval bottleneck",action:"Escalate targeting approval to Capital One partner lead immediately"},
+  {id:6, name:"Price Freeze Explainer",             plat:"podcast",chan:"audio",  src:"iHeartRadio",budget:28000, spent:5600,  imp:168000, clk:1344, conv:40,  start:"2026-02-08",end:"2026-03-08",risk:"high",  status:"Waiting on Assets",   reason:"20% spent at 99% of timeline — host scripts unapproved, will miss delivery",action:"Approve emergency script revision or extend end date 7 days"},
+  {id:7, name:"Travel More Campaign",               plat:"ott_tv", chan:"video",  src:"Hulu",       budget:120000,spent:48000, imp:960000, clk:9600, conv:288, start:"2026-01-15",end:"2026-03-15",risk:"medium",status:"Campaign In Progress",reason:"40% spent at 65% elapsed — OTT inventory constraints limiting delivery",action:"Explore alternate OTT inventory or shift budget to uncapped web display"},
+  {id:8, name:"Seat Upgrade Promo",                 plat:"ios",    chan:"social", src:"Meta",       budget:48000, spent:22000, imp:396000, clk:5544, conv:111, start:"2026-02-10",end:"2026-03-10",risk:"medium",status:"Paused",              reason:"Campaign paused by partner mid-flight — 45% of budget unspent",action:"Request partner decision by 3/10 EOD; flag budget for reallocation if no response"},
+  {id:9, name:"Cancel for Any Reason Awareness",    plat:"web",    chan:"display",src:"Google",     budget:40000, spent:8200,  imp:164000, clk:984,  conv:20,  start:"2026-02-10",end:"2026-03-10",risk:"medium",status:"Campaign In Progress",reason:"Low CTR signals targeting or creative mismatch despite adequate budget",action:"A/B test alternate headline creative; tighten to high-intent travel searchers"},
+  {id:10,name:"Honeymoon Travel Inspiration",       plat:"ios",    chan:"social", src:"Pinterest",  budget:32000, spent:3100,  imp:62000,  clk:744,  conv:15,  start:"2026-02-15",end:"2026-03-31",risk:"medium",status:"Waiting on Assets",   reason:"Advertiser funding not confirmed — spend at risk of full pause",action:"Pause spend and escalate funding confirmation to account manager immediately"},
+  {id:11,name:"Last Minute Hotels – High Intent",   plat:"web",    chan:"search", src:"Google",     budget:67000, spent:29500, imp:590000, clk:14750,conv:442, start:"2026-02-20",end:"2026-03-20",risk:"low",   status:"Campaign In Progress",reason:"Pacing ~1.05× with strong conversion rate",action:"No action needed; monitor for inventory ceiling approaching spring break"},
+  {id:12,name:"Disruption Protection Awareness",    plat:"podcast",chan:"audio",  src:"Spotify",    budget:22000, spent:9800,  imp:294000, clk:2352, conv:94,  start:"2026-02-20",end:"2026-03-20",risk:"low",   status:"Campaign In Progress",reason:"Pacing slightly above baseline — minor over-delivery risk, manageable",action:"Monitor daily; reallocate if over-delivery exceeds 10%"},
+  {id:13,name:"Fintech for Travelers – Pod Series", plat:"podcast",chan:"audio",  src:"Spotify",    budget:35000, spent:34800, imp:1044000,clk:8352, conv:334, start:"2026-02-01",end:"2026-03-01",risk:"low",   status:"Campaign In Progress",reason:"99% delivered — final episodes live, on track to complete",action:"No action needed; prepare wrap report and flag for renewal conversation"},
+  {id:14,name:"Flight Deal Retargeting",            plat:"web",    chan:"display",src:"Google",     budget:60000, spent:59200, imp:1184000,clk:17760,conv:533, start:"2026-01-25",end:"2026-03-07",risk:"done",  status:"Complete",            reason:"Campaign ends today — 99% spend delivered",action:"Pull final delivery report and confirm revenue reconciliation"},
+  {id:15,name:"App Install – Budget Travelers",     plat:"android",chan:"social", src:"TikTok",     budget:55000, spent:55000, imp:990000, clk:14850,conv:594, start:"2026-01-20",end:"2026-02-28",risk:"done",  status:"Complete",            reason:"Campaign completed — full budget delivered",action:"Submit final delivery report within 24hrs"},
+];
+
+// 14-day daily labels (Feb 22 – Mar 7)
+const DLABELS=["Feb 22","Feb 23","Feb 24","Feb 25","Feb 26","Feb 27","Feb 28","Mar 1","Mar 2","Mar 3","Mar 4","Mar 5","Mar 6","Mar 7"];
+const WLABELS=["Wk Feb 22","Wk Mar 1"];
+
+// Spend arrays by grouping
+const SP_PLAT_D={ios:[2100,1950,2300,1800,2100,2400,1900,2200,1600,1400,1200,900,800,700],android:[4200,3900,4100,5200,4800,3600,4400,3800,3200,2900,3100,2800,2600,2400],web:[3100,3400,2900,3200,3600,3100,2800,3300,3100,2900,2700,2500,2300,2100],ott_tv:[5200,4800,5100,5400,4900,5200,4700,4400,4200,3900,3600,3400,3200,2900],podcast:[1100,1200,1000,1300,1100,1200,1000,1100,900,800,900,800,700,600]};
+const SP_CHAN_D={social:[7200,6800,7300,8200,7900,6900,7700,7000,6200,5700,6100,5500,5000,4800],display:[2800,3100,2600,2900,3200,2800,2500,3000,2800,2600,2400,2200,2000,1800],search:[1200,1100,1300,1200,1400,1100,1000,1200,1100,1000,900,900,800,700],video:[4300,4000,4200,4500,4100,4300,3900,3700,3500,3200,3000,2800,2700,2400],audio:[900,1000,800,1100,900,1000,800,900,700,700,700,600,600,500]};
+const SP_PLAT_W={ios:[12650,8600],android:[25700,18800],web:[19400,16900],ott_tv:[30600,21700],podcast:[6700,5100]};
+const SP_CHAN_W={social:[45600,34200],display:[18300,15200],search:[7600,5900],video:[27500,19300],audio:[5600,4100]};
+const PACE_PLAT=[{n:"iOS",p:.42,c:"#4fc3f7"},{n:"Android",p:.58,c:"#43e97b"},{n:"Web",p:.74,c:"#ffd166"},{n:"OTT/TV",p:.51,c:"#c084fc"},{n:"Podcast",p:.87,c:"#fa6866"}];
+const PACE_CHAN=[{n:"Social",p:.55,c:"#4fc3f7"},{n:"Display",p:.68,c:"#ffd166"},{n:"Search",p:.78,c:"#43e97b"},{n:"Video",p:.46,c:"#c084fc"},{n:"Audio",p:.82,c:"#fa6866"}];
+const PCOLORS={ios:"#4fc3f7",android:"#43e97b",web:"#ffd166",ott_tv:"#c084fc",podcast:"#fa6866",social:"#4fc3f7",display:"#ffd166",search:"#43e97b",video:"#c084fc",audio:"#fa6866"};
+
+// WoW reference values (prior week)
+const WOW_PREV={risk:5,pr:0.71,paced:0.41,atrisk:290000,cac:72,ctr:0.0168,cvr:0.032};
+// DoD reference values (yesterday, Mar 6)
+const DOD_PREV={risk:8,pr:0.74,paced:0.53,atrisk:340000,cac:68,ctr:0.0172,cvr:0.035};
+
+// ═════════════════════════════ STATE ═════════════════════════════════════════
+let lineView='daily', lineBreak='platform';
+let paceBreak='platform';
+let comboView='daily', comboBreak='platform';
+let eSortCol='risk', eSortDir=1;
+let trendCh=null, comboCh=null;
+const TODAY=new Date('2026-03-07');
+const EARLIEST='2026-01-15';
+
+// ═════════════════════════════ INIT ══════════════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+  // set date defaults — start at earliest, end left blank (show full dataset)
+  ['f-start','d-start'].forEach(id=>document.getElementById(id).value=EARLIEST);
+  // end date intentionally left blank to include all campaigns
+  // populate campaign dropdown
+  const sel=document.getElementById('d-camp');
+  CAMPS.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o);});
+  applyExec();
+  applyDrill();
+});
+
+// ═════════════════════════════ HELPERS ═══════════════════════════════════════
+function fmt$(n){return n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1000?'$'+(n/1000).toFixed(0)+'K':'$'+n}
+function pcColor(p){return p<.4?'var(--coral)':p<.75?'var(--yellow)':'var(--green)'}
+function daysLeft(end){return Math.max(0,Math.round((new Date(end)-TODAY)/86400000))}
+function daysTotal(s,e){return Math.max(1,Math.round((new Date(e)-new Date(s))/86400000))}
+function pctTR(c){return daysLeft(c.end)/daysTotal(c.start,c.end)}
+function wowBadge(cur,prev,higher='up',fmt=v=>v){
+  if(prev===0)return'';
+  const diff=cur-prev;const pct=(diff/Math.abs(prev)*100).toFixed(0);
+  const dir=diff>0?'up':diff<0?'dn':'flat';
+  const arrow=dir==='up'?'↑':dir==='dn'?'↓':'→';
+  // For risk/cac lower is better; for others higher is better
+  const effectiveDir=(higher==='up')===dir==='up'?dir:(dir==='flat'?'flat':(dir==='up'?'dn':'up'));
+  return `<span class="wow ${effectiveDir}">${arrow}${Math.abs(pct)}% WoW</span>`;
+}
+
+function getExecFiltered(){
+  const pf=document.getElementById('f-plat').value;
+  const cf=document.getElementById('f-chan').value;
+  const rf=document.getElementById('f-risk').value;
+  const sf=document.getElementById('f-status').value;
+  const sd=document.getElementById('f-start').value;
+  const ed=document.getElementById('f-end').value;
+  return CAMPS.filter(c=>{
+    if(pf!='all'&&c.plat!=pf)return false;
+    if(cf!='all'&&c.chan!=cf)return false;
+    if(rf!='all'&&c.risk!=rf)return false;
+    if(sf!='all'&&c.status!=sf)return false;
+    if(sd&&c.start<sd)return false;
+    if(ed&&c.end>ed)return false;
+    return true;
+  });
+}
+function getDrillFiltered(){
+  const pf=document.getElementById('d-plat').value;
+  const cf=document.getElementById('d-chan').value;
+  const rf=document.getElementById('d-risk').value;
+  const sf=document.getElementById('d-status').value;
+  const campf=document.getElementById('d-camp').value;
+  const sd=document.getElementById('d-start').value;
+  const ed=document.getElementById('d-end').value;
+  return CAMPS.filter(c=>{
+    if(pf!='all'&&c.plat!=pf)return false;
+    if(cf!='all'&&c.chan!=cf)return false;
+    if(rf!='all'&&c.risk!=rf)return false;
+    if(sf!='all'&&c.status!=sf)return false;
+    if(campf!='all'&&c.id!=+campf)return false;
+    if(sd&&c.start<sd)return false;
+    if(ed&&c.end>ed)return false;
+    return true;
+  });
+}
+
+// ═════════════════════════════ EXEC ══════════════════════════════════════════
+function applyExec(){renderSC();renderExecTable();buildTrend();buildPacing();renderTopPerformers();}
+function clearExec(){
+  ['f-plat','f-chan','f-risk','f-status'].forEach(id=>document.getElementById(id).value='all');
+  document.getElementById('f-start').value=EARLIEST;
+  document.getElementById('f-end').value='2026-03-07';
+  applyExec();
+}
+
+function mkBadge(cur,prev,higherIsGood){
+  if(!prev||prev===0)return'';
+  const diff=cur-prev;
+  if(Math.abs(diff/prev)<0.001)return`<span class="wow flat">→ 0%</span>`;
+  const pct=Math.abs(diff/prev*100).toFixed(0);
+  const arrow=diff>0?'↑':'↓';
+  // green = good direction
+  const goodMove=higherIsGood?(diff>0):(diff<0);
+  const cls=goodMove?'up':'dn';
+  return`<span class="wow ${cls}">${arrow}${pct}%</span>`;
+}
+function wowBadge(cur,prev,dir){return mkBadge(cur,prev,dir==='up');}
+
+function renderSC(){
+  const d=getExecFiltered();
+  const tot=d.length;
+  const atR=d.filter(c=>c.risk==='high'||c.risk==='medium').length;
+  const totB=d.reduce((s,c)=>s+c.budget,0);
+  const totSp=d.reduce((s,c)=>s+c.spent,0);
+  const atRB=d.filter(c=>c.risk==='high'||c.risk==='medium').reduce((s,c)=>s+c.budget,0);
+  const totI=d.reduce((s,c)=>s+c.imp,0);
+  const totCl=d.reduce((s,c)=>s+c.clk,0);
+  const totCo=d.reduce((s,c)=>s+c.conv,0);
+  let prSum=0,prN=0;
+  d.forEach(c=>{
+    const dt=daysTotal(c.start,c.end);
+    const el=Math.max(1,dt-daysLeft(c.end));
+    const pE=el/dt; const pS=c.spent/c.budget;
+    if(pE>0){prSum+=(pS/pE);prN++;}
+  });
+  const pr=prN>0?prSum/prN:0;
+  const paced=totB>0?totSp/totB:0;
+  const ctr=totI>0?totCl/totI:0;
+  const cvr=totCl>0?totCo/totCl:0;
+  const cac=totCo>0?Math.round(totSp/totCo):0;
+
+  document.getElementById('sc-risk').textContent=atR;
+  document.getElementById('sc-total').textContent=tot;
+  document.getElementById('sc-pacratio').textContent=pr.toFixed(2)+'×';
+  document.getElementById('sc-paced').textContent=(paced*100).toFixed(0)+'%';
+  document.getElementById('sc-atrisk').textContent=fmt$(atRB);
+  document.getElementById('sc-atrisk-pct').textContent=totB>0?(atRB/totB*100).toFixed(0)+'%':'—';
+  document.getElementById('sc-budget').textContent=fmt$(totB);
+  document.getElementById('sc-cac').textContent=cac?fmt$(cac):'—';
+  document.getElementById('sc-ctr').textContent=(ctr*100).toFixed(2)+'%';
+  document.getElementById('sc-cvr').textContent=(cvr*100).toFixed(1)+'%';
+
+  // WoW-only badges for exec scorecards
+  function wowOnly(id, cur, wowPrev, dir){
+    const wow=mkBadge(cur,wowPrev,dir==='up');
+    document.getElementById(id).innerHTML=
+      `<span style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em">WoW</span> ${wow}`;
+  }
+  wowOnly('wow-risk', atR, WOW_PREV.risk,'dn');
+  wowOnly('wow-pr', pr, WOW_PREV.pr,'up');
+  wowOnly('wow-paced', paced, WOW_PREV.paced,'up');
+  wowOnly('wow-atrisk', atRB, WOW_PREV.atrisk,'dn');
+  wowOnly('wow-cac', cac, WOW_PREV.cac,'dn');
+  wowOnly('wow-ctr', ctr, WOW_PREV.ctr,'up');
+  wowOnly('wow-cvr', cvr, WOW_PREV.cvr,'up');
+}
+
+// ═════════════════════════════ EXEC TABLE ════════════════════════════════════
+const RORD={high:0,medium:1,low:2,done:3};
+const RLAB={high:'HIGH RISK',medium:'MEDIUM',low:'ON TRACK',done:'DONE'};
+function statusPill(s){
+  const m={'Campaign In Progress':'sp-ip','Launch Delayed':'sp-dl','Waiting on Assets':'sp-wa','Paused':'sp-pa','Complete':'sp-co'};
+  return `<span class="status-pill ${m[s]||'sp-ip'}">${s}</span>`;
+}
+function sortExecTbl(col){if(eSortCol===col)eSortDir*=-1;else{eSortCol=col;eSortDir=1;}renderExecTable();}
+function renderExecTable(){
+  const data=[...getExecFiltered()].sort((a,b)=>{
+    let av,bv;
+    if(eSortCol==='risk'){av=RORD[a.risk];bv=RORD[b.risk];}
+    else if(eSortCol==='budget'){av=a.budget;bv=b.budget;}
+    else if(eSortCol==='ctr'){av=a.imp>0?a.clk/a.imp:0;bv=b.imp>0?b.clk/b.imp:0;}
+    else if(eSortCol==='cvr'){av=a.clk>0?a.conv/a.clk:0;bv=b.clk>0?b.conv/b.clk:0;}
+    else if(eSortCol==='cac'){av=a.conv>0?a.spent/a.conv:9999;bv=b.conv>0?b.spent/b.conv:9999;}
+    else{av=a.name;bv=b.name;}
+    return av<bv?-eSortDir:av>bv?eSortDir:0;
+  });
+  const tb=document.getElementById('execTable');tb.innerHTML='';
+  data.forEach(c=>{
+    const p=c.spent/c.budget;
+    const clr=pcColor(p);
+    const ctr=c.imp>0?(c.clk/c.imp*100).toFixed(2)+'%':'—';
+    const cvr=c.clk>0?(c.conv/c.clk*100).toFixed(1)+'%':'—';
+    const cac=c.conv>0?fmt$(Math.round(c.spent/c.conv)):'—';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><div class="tdname">${c.name}</div><div class="tdmeta">${c.plat.toUpperCase()} · ${c.chan} · ${c.src}</div></td>
+      <td class="tdmeta" style="white-space:nowrap">${fmt$(c.budget)}<br><span style="color:var(--text-muted)">${fmt$(c.spent)} spent</span></td>
+      <td class="pcol"><div class="pnum" style="color:${clr}">${(p*100).toFixed(0)}%</div><div class="pb"><div class="pbf" style="width:${Math.min(p*100,100)}%;background:${clr}"></div></div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;font-weight:700">${c.start}→${c.end}</div></td>
+      <td><span class="mc">${cac}</span></td>
+      <td><span class="mc">${ctr}</span></td>
+      <td><span class="mc">${cvr}</span></td>
+      <td>${statusPill(c.status)}</td>
+      <td><span class="badge ${c.risk}"><span class="bdot"></span>${RLAB[c.risk]}</span></td>
+      <td class="td-reason">${c.reason}</td>
+      <td class="td-action"><span class="arr">→</span>${c.action}</td>`;
+    tb.appendChild(tr);
+  });
+  document.getElementById('tbl-count').textContent=`${data.length} of ${CAMPS.length} campaigns`;
+}
+
+// ═════════════════════════════ TOP PERFORMERS ═════════════════════════════════
+function renderTopPerformers(){
+  const CHIP='font-size:10px;font-weight:700;padding:2px 9px;border-radius:3px;border:1px solid;white-space:nowrap';
+  const CHIP_G=`${CHIP};background:var(--green-bg);color:var(--green);border-color:rgba(67,233,123,.25)`;
+  const CHIP_S=`${CHIP};background:var(--sky-bg);color:var(--sky);border-color:rgba(79,195,247,.25)`;
+  const CHIP_Y=`${CHIP};background:var(--yellow-bg);color:var(--yellow);border-color:rgba(255,209,102,.25)`;
+  const CHIP_R=`${CHIP};background:var(--coral-bg);color:var(--coral);border-color:rgba(250,104,102,.25)`;
+
+  const active=getExecFiltered().filter(c=>c.risk!=='done');
+  const scored=active.map(c=>{
+    const dt=daysTotal(c.start,c.end);
+    const el=Math.max(1,dt-daysLeft(c.end));
+    const pE=el/dt; const pS=c.spent/c.budget;
+    const pr=pE>0?pS/pE:0;
+    const cac=c.conv>0?c.spent/c.conv:9999;
+    const riskScore={low:3,medium:1,high:0}[c.risk]||0;
+    const prScore=Math.min(pr,1.5)/1.5*40;
+    const cacScore=Math.max(0,(500-cac)/500)*40;
+    return{...c, pr:pr.toFixed(2), cacRaw:cac, cac:cac<9999?fmt$(Math.round(cac)):'—', score:prScore+cacScore+riskScore*10};
+  }).sort((a,b)=>b.score-a.score).slice(0,3);
+
+  const el=document.getElementById('topPerformers');
+  el.innerHTML='';
+  const medals=['🥇','🥈','🥉'];
+  const tcColors=['var(--green)','var(--sky)','var(--yellow)'];
+  scored.forEach((c,i)=>{
+    const paced=(c.spent/c.budget*100).toFixed(0);
+    const riskChip=c.risk==='low'?`<span style="${CHIP_G}">${RLAB[c.risk]}</span>`:c.risk==='medium'?`<span style="${CHIP_Y}">${RLAB[c.risk]}</span>`:`<span style="${CHIP_R}">${RLAB[c.risk]}</span>`;
+    el.innerHTML+=`<div class="top-card" style="--tc-color:${tcColors[i]}">
+      <div class="tc-rank">${medals[i]} <span style="color:${tcColors[i]}">Rank #${i+1}</span></div>
+      <div class="tc-name">${c.name}</div>
+      <div class="tc-meta">${c.plat.toUpperCase()} · ${c.chan} · ${c.src} &nbsp;|&nbsp; ${c.start} → ${c.end}</div>
+      <div class="tc-chips">
+        <span style="${CHIP_S}">Pacing ${c.pr}×</span>
+        <span style="${CHIP_G}">CAC ${c.cac}</span>
+        ${riskChip}
+        <span style="${CHIP_S}">${paced}% spent</span>
+      </div>
+    </div>`;
+  });
+  if(scored.length===0)el.innerHTML='<div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--text-muted);font-weight:700">No active campaigns match filters.</div>';
+}
+
+// ═════════════════════════════ CHARTS ════════════════════════════════════════
+const TT={backgroundColor:'#1c2436',borderColor:'#2a3347',borderWidth:1,titleColor:'#a8b2c8',bodyColor:'#eef0f5',titleFont:{family:"'Nunito Sans',sans-serif",size:10},bodyFont:{family:"'Nunito Sans',sans-serif",size:11}};
+
+function buildTrend(){
+  const isW=lineView==='weekly';
+  const labels=isW?WLABELS:DLABELS;
+  const src=isW?(lineBreak==='platform'?SP_PLAT_W:SP_CHAN_W):(lineBreak==='platform'?SP_PLAT_D:SP_CHAN_D);
+  const totalByPt=labels.map((_,i)=>Object.values(src).reduce((s,a)=>s+(a[i]||0),0));
+  const datasets=Object.keys(src).map(k=>({
+    label:k.toUpperCase(),data:src[k],
+    borderColor:PCOLORS[k]||'#aaa',backgroundColor:(PCOLORS[k]||'#aaa')+'18',
+    borderWidth:2,pointRadius:3,tension:.4,fill:false
+  }));
+  const vw=lineView==='daily'?'Daily':'Weekly';
+  const brk=lineBreak==='platform'?'Platform':'Channel';
+  document.getElementById('line-title').textContent=`${vw} Spend by ${brk}`;
+  const ctx=document.getElementById('trendChart').getContext('2d');
+  if(trendCh)trendCh.destroy();
+  trendCh=new Chart(ctx,{type:'line',data:{labels,datasets},options:{
+    responsive:true,maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{labels:{color:'#5c6b85',font:{family:"'Nunito Sans',sans-serif",size:10},boxWidth:10,padding:10}},
+      tooltip:{...TT,callbacks:{
+        label:ctx=>{
+          const val=ctx.parsed.y;
+          const total=totalByPt[ctx.dataIndex]||1;
+          const pct=(val/total*100).toFixed(0);
+          return ` ${ctx.dataset.label}: $${val.toLocaleString()} (${pct}% of total)`;
+        }
+      }}
+    },
+    scales:{
+      x:{grid:{color:'#1c2436'},ticks:{color:'#5c6b85',font:{family:"'Nunito Sans',sans-serif",size:10}}},
+      y:{grid:{color:'#1c2436'},ticks:{color:'#5c6b85',font:{family:"'Nunito Sans',sans-serif",size:10},callback:v=>'$'+(v/1000).toFixed(0)+'K'}}
+    }
+  }});
+}
+
+function buildPacing(){
+  const src=paceBreak==='platform'?PACE_PLAT:PACE_CHAN;
+  const brk=paceBreak==='platform'?'Platform':'Channel';
+  document.getElementById('pace-title').textContent=`% Budget Spent by ${brk}`;
+  const el=document.getElementById('pacingBars');el.innerHTML='';
+  src.forEach(p=>{el.innerHTML+=`<div class="prow"><div class="pname">${p.n}</div><div class="btrack"><div class="bfill" style="width:${p.p*100}%;background:${p.c}"></div></div><div class="bpct" style="color:${p.c}">${(p.p*100).toFixed(0)}%</div></div>`;});
+}
+
+function setLineView(v){
+  lineView=v;
+  document.getElementById('lbtn-d').classList.toggle('active',v==='daily');
+  document.getElementById('lbtn-w').classList.toggle('active',v==='weekly');
+  buildTrend();
+}
+function setLineBreak(v){
+  lineBreak=v;
+  document.getElementById('lbtn-plat').classList.toggle('active',v==='platform');
+  document.getElementById('lbtn-chan').classList.toggle('active',v==='channel');
+  buildTrend();
+}
+function setPaceBreak(v){
+  paceBreak=v;
+  document.getElementById('pace-plat').classList.toggle('active',v==='platform');
+  document.getElementById('pace-chan').classList.toggle('active',v==='channel');
+  buildPacing();
+}
+
+// ═════════════════════════════ DRILL ═════════════════════════════════════════
+function applyDrill(){renderDrillMetrics();buildCombo();renderDailyTable();renderWeeklyTable();}
+function clearDrill(){
+  ['d-plat','d-chan','d-risk','d-status','d-camp'].forEach(id=>document.getElementById(id).value='all');
+  document.getElementById('d-start').value=EARLIEST;
+  document.getElementById('d-end').value='2026-03-07';
+  applyDrill();
+}
+
+function renderDrillMetrics(){
+  const d=getDrillFiltered();
+  const totB=d.reduce((s,c)=>s+c.budget,0);
+  const totSp=d.reduce((s,c)=>s+c.spent,0);
+  const totI=d.reduce((s,c)=>s+c.imp,0);
+  const totCl=d.reduce((s,c)=>s+c.clk,0);
+  const totCo=d.reduce((s,c)=>s+c.conv,0);
+  let trSum=0;d.forEach(c=>trSum+=pctTR(c));
+  const pct=totB>0?totSp/totB:0;
+  const avgTRval=d.length>0?trSum/d.length:0;
+  const ctr=totI>0?totCl/totI:0;
+  const cvr=totCl>0?totCo/totCl:0;
+  const cac=totCo>0?Math.round(totSp/totCo):0;
+
+  document.getElementById('dm-bud').textContent=fmt$(totB);
+  document.getElementById('dm-pct').textContent=totB>0?(pct*100).toFixed(0)+'%':'—';
+  document.getElementById('dm-time').textContent=d.length>0?(avgTRval*100).toFixed(0)+'%':'—';
+  document.getElementById('dm-ctr').textContent=totI>0?(ctr*100).toFixed(2)+'%':'—';
+  document.getElementById('dm-cvr').textContent=totCl>0?(cvr*100).toFixed(1)+'%':'—';
+  document.getElementById('dm-cac').textContent=totCo>0?fmt$(cac):'—';
+
+  // DoD + WoW for drill cards (using same reference pools as exec)
+  function drillBoth(id, cur, dodPrev, wowPrev, dir){
+    const dod=mkBadge(cur,dodPrev,dir==='up');
+    const wow=mkBadge(cur,wowPrev,dir==='up');
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=
+      `<span style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em">DoD</span> ${dod}&nbsp;&nbsp;<span style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em">WoW</span> ${wow}`;
+  }
+  drillBoth('dm-wow-pct',  pct,      DOD_PREV.paced,  WOW_PREV.paced,  'up');
+  drillBoth('dm-wow-time', avgTRval, 0.38,            0.30,            'dn'); // time remaining: lower is expected over time
+  drillBoth('dm-wow-ctr',  ctr,      DOD_PREV.ctr,    WOW_PREV.ctr,    'up');
+  drillBoth('dm-wow-cvr',  cvr,      DOD_PREV.cvr,    WOW_PREV.cvr,    'up');
+  drillBoth('dm-wow-cac',  cac,      DOD_PREV.cac,    WOW_PREV.cac,    'dn');
+}
+
+function setComboView(v){
+  comboView=v;
+  document.getElementById('combo-d').classList.toggle('active',v==='daily');
+  document.getElementById('combo-w').classList.toggle('active',v==='weekly');
+  buildCombo();
+}
+function setComboBreak(v){
+  comboBreak=v;
+  ['combo-plat','combo-chan','combo-camp'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  document.getElementById('combo-'+v.substring(0,4)).classList.add('active');
+  buildCombo();
+}
+
+function buildCombo(){
+  const isW=comboView==='weekly';
+  const labels=isW?WLABELS:DLABELS;
+  const vw=isW?'Weekly':'Daily';
+  let src;
+  if(comboBreak==='platform'){src=isW?SP_PLAT_W:SP_PLAT_D;document.getElementById('combo-title').textContent=`${vw} Spend by Platform`;}
+  else if(comboBreak==='channel'){src=isW?SP_CHAN_W:SP_CHAN_D;document.getElementById('combo-title').textContent=`${vw} Spend by Channel`;}
+  else {
+    // campaign view
+    const fc=getDrillFiltered().slice(0,6);
+    src={};
+    fc.forEach(c=>{
+      const base=c.spent/DLABELS.length;
+      const key=c.name.length>20?c.name.substring(0,20)+'…':c.name;
+      if(isW){src[key]=[Math.round(base*7*(0.8+Math.random()*.4)),Math.round(base*7*(0.6+Math.random()*.4))];}
+      else{src[key]=DLABELS.map(()=>Math.round(base*(0.6+Math.random()*.8)));}
+    });
+    document.getElementById('combo-title').textContent=`${vw} Spend by Campaign`;
+  }
+  const totalByDay=labels.map((_,i)=>Object.values(src).reduce((s,a)=>s+(a[i]||0),0));
+  const baseTotCo=getDrillFiltered().reduce((s,c)=>s+c.conv,0)||100;
+  const cacLine=totalByDay.map(sp=>Math.round(sp/Math.max(1,Math.round(baseTotCo/labels.length))));
+
+  const barDS=Object.keys(src).map(k=>({
+    type:'bar',label:k.toUpperCase(),data:src[k],
+    backgroundColor:(PCOLORS[k]||'#7a8aaa')+'88',borderColor:PCOLORS[k]||'#7a8aaa',
+    borderWidth:1,borderRadius:3,stack:'spend',yAxisID:'y'
+  }));
+  const ctx=document.getElementById('comboChart').getContext('2d');
+  if(comboCh)comboCh.destroy();
+  comboCh=new Chart(ctx,{data:{labels,datasets:[...barDS,{type:'line',label:'CAC ($)',data:cacLine,borderColor:'#fa6866',backgroundColor:'rgba(250,104,102,.12)',borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#fa6866',tension:.4,yAxisID:'y2',fill:false}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:'#5c6b85',font:{family:"'Nunito Sans',sans-serif",size:10},boxWidth:10,padding:10,
+          filter:(item)=>item.text!=='CAC ($)'||true
+        }},
+        tooltip:{...TT,callbacks:{label:c=>c.dataset.yAxisID==='y2'?` CAC: $${c.parsed.y}`:` ${c.dataset.label}: $${c.parsed.y.toLocaleString()}`}}
+      },
+      scales:{
+        x:{stacked:true,grid:{color:'#1c2436'},ticks:{color:'#5c6b85',font:{family:"'Nunito Sans',sans-serif",size:10}}},
+        y:{stacked:true,grid:{color:'#1c2436'},position:'left',title:{display:true,text:'Spend ($)',color:'#5c6b85',font:{size:10}},ticks:{color:'#5c6b85',font:{family:"'Nunito Sans',sans-serif",size:10},callback:v=>'$'+(v/1000).toFixed(0)+'K'}},
+        y2:{grid:{display:false},position:'right',title:{display:true,text:'CAC ($)',color:'#fa6866',font:{size:10}},ticks:{color:'#fa6866',font:{family:"'Nunito Sans',sans-serif",size:10},callback:v=>'$'+v}}
+      }
+    }
+  });
+}
+
+// ═════════════════════════════ RAW TABLES ════════════════════════════════════
+// Generate daily rows per campaign (one row per day in date range)
+function getDailyRows(filtered){
+  const rows=[];
+  const startDate=new Date('2026-02-22');
+  const endDate=new Date('2026-03-07');
+  filtered.forEach(c=>{
+    let d=new Date(startDate);
+    while(d<=endDate){
+      const ds=d.toISOString().slice(0,10);
+      const campStart=new Date(c.start);
+      const campEnd=new Date(c.end);
+      if(d>=campStart&&d<=campEnd){
+        const daysInFlight=daysTotal(c.start,c.end);
+        const dailyBase=c.spent/daysInFlight;
+        const noise=0.6+Math.random()*0.8;
+        const dailySpend=Math.round(dailyBase*noise);
+        const dailyImp=Math.round(c.imp/daysInFlight*noise);
+        const dailyClk=Math.round(c.clk/daysInFlight*noise);
+        const dailyConv=Math.round(c.conv/daysInFlight*noise);
+        rows.push({date:ds,name:c.name,plat:c.plat,chan:c.chan,src:c.src,budget:c.budget,spend:dailySpend,imp:dailyImp,clk:dailyClk,conv:dailyConv,status:c.status,risk:c.risk});
+      }
+      d.setDate(d.getDate()+1);
+    }
+  });
+  return rows.sort((a,b)=>a.date.localeCompare(b.date));
+}
+
+function getWeeklyRows(filtered){
+  const weeks=[{label:'Wk Feb 22',start:'2026-02-22',end:'2026-02-28'},{label:'Wk Mar 1',start:'2026-03-01',end:'2026-03-07'}];
+  const rows=[];
+  filtered.forEach(c=>{
+    let cumSpend=0;
+    weeks.forEach(wk=>{
+      const daysInFlight=daysTotal(c.start,c.end);
+      const daysInWeek=7;
+      const wkBase=c.spent/daysInFlight*daysInWeek;
+      const noise=0.7+Math.random()*0.6;
+      const wkSpend=Math.round(wkBase*noise);
+      const wkImp=Math.round(c.imp/daysInFlight*daysInWeek*noise);
+      const wkClk=Math.round(c.clk/daysInFlight*daysInWeek*noise);
+      const wkConv=Math.round(c.conv/daysInFlight*daysInWeek*noise);
+      cumSpend+=wkSpend;
+      rows.push({week:wk.label,name:c.name,plat:c.plat,chan:c.chan,src:c.src,budget:c.budget,spend:wkSpend,imp:wkImp,clk:wkClk,conv:wkConv,cumSpend,status:c.status,risk:c.risk});
+    });
+  });
+  return rows;
+}
+
+function renderDailyTable(){
+  const rows=getDailyRows(getDrillFiltered());
+  const tb=document.getElementById('dailyTable');tb.innerHTML='';
+  rows.forEach(r=>{
+    const ctr=r.imp>0?(r.clk/r.imp*100).toFixed(2)+'%':'—';
+    const cvr=r.clk>0?(r.conv/r.clk*100).toFixed(1)+'%':'—';
+    const cac=r.conv>0?fmt$(Math.round(r.spend/r.conv)):'—';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="tdmeta" style="white-space:nowrap">${r.date}</td>
+      <td class="tdname" style="white-space:nowrap;max-width:200px;font-size:12px">${r.name}</td>
+      <td class="tdmeta">${r.plat}</td><td class="tdmeta">${r.chan}</td><td class="tdmeta">${r.src}</td>
+      <td class="tdmeta">${fmt$(r.spend)}</td>
+      <td class="tdmeta">${(r.imp/1000).toFixed(0)}K</td>
+      <td class="tdmeta">${r.clk.toLocaleString()}</td>
+      <td class="tdmeta">${r.conv}</td>
+      <td><span class="mc">${ctr}</span></td>
+      <td><span class="mc">${cvr}</span></td>
+      <td><span class="mc">${cac}</span></td>
+      <td>${statusPill(r.status)}</td>
+      <td><span class="badge ${r.risk}"><span class="bdot"></span>${RLAB[r.risk]}</span></td>`;
+    tb.appendChild(tr);
+  });
+  document.getElementById('raw-daily-count').textContent=`${rows.length} rows`;
+}
+
+function renderWeeklyTable(){
+  const rows=getWeeklyRows(getDrillFiltered());
+  const tb=document.getElementById('weeklyTable');tb.innerHTML='';
+  rows.forEach(r=>{
+    const ctr=r.imp>0?(r.clk/r.imp*100).toFixed(2)+'%':'—';
+    const cvr=r.clk>0?(r.conv/r.clk*100).toFixed(1)+'%':'—';
+    const cac=r.conv>0?fmt$(Math.round(r.spend/r.conv)):'—';
+    const pctCum=r.budget>0?(r.cumSpend/r.budget*100).toFixed(0)+'%':'—';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="tdmeta" style="white-space:nowrap">${r.week}</td>
+      <td class="tdname" style="white-space:nowrap;max-width:200px;font-size:12px">${r.name}</td>
+      <td class="tdmeta">${r.plat}</td><td class="tdmeta">${r.chan}</td><td class="tdmeta">${r.src}</td>
+      <td class="tdmeta">${fmt$(r.spend)}</td>
+      <td class="tdmeta">${(r.imp/1000).toFixed(0)}K</td>
+      <td class="tdmeta">${r.clk.toLocaleString()}</td>
+      <td class="tdmeta">${r.conv}</td>
+      <td><span class="mc">${ctr}</span></td>
+      <td><span class="mc">${cvr}</span></td>
+      <td><span class="mc">${cac}</span></td>
+      <td class="tdmeta">${fmt$(r.budget)}</td>
+      <td><span style="font-weight:700;color:${pcColor(r.cumSpend/r.budget)}">${pctCum}</span></td>
+      <td>${statusPill(r.status)}</td>
+      <td><span class="badge ${r.risk}"><span class="bdot"></span>${RLAB[r.risk]}</span></td>`;
+    tb.appendChild(tr);
+  });
+  document.getElementById('raw-weekly-count').textContent=`${rows.length} rows`;
+}
+
+// ═════════════════════════════ TAB SWITCH ════════════════════════════════════
+function switchTab(tab,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='exec'){setTimeout(()=>{buildTrend();buildPacing();},50);}
+  if(tab==='drill'){setTimeout(()=>{buildCombo();renderDailyTable();renderWeeklyTable();},50);}
+}
+</script>
+</body>
+</html>
