@@ -13,6 +13,11 @@ A lightweight campaign operations dashboard built as part of Hopper's interview 
 
 **Live demo:** [Dashboard link](https://ivana-vlahovic.github.io/ai-gen-dash-hts/) | **GitHub Link:** [Visit Repository](https://github.com/ivana-vlahovic/ai-gen-dash-hts)
 
+Problem: HTS Media runs sponsored campaigns across travel surfaces. A recurring challenge is identifying campaigns at risk of under-delivery early enough to intervene.
+1) Campaign data is incomplete or messy
+2) Signals come from multiple places (budget, timing, performance, notes)
+3) Teams need a clear recommendation, not raw metrics
+
 ---
 
 ## What It Does
